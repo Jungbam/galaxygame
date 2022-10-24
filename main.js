@@ -42,6 +42,9 @@ const setupkeyboardListner = () => {
   // 키를 떼는 순간 해당 키 값을 삭제한다.
   document.addEventListener('keyup', function (e) {
     delete keysdown[e.keyCode]
+    if (e.keyCode === 32) {
+      createBullet()
+    }
   })
 }
 const update = () => {
@@ -58,6 +61,7 @@ const update = () => {
     }
   }
 }
+
 const render = () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height) // canvas에 렌더링 된 것들을 초기화하는 작업 / 하지 않았을 때 기존 그림들이 같이 렌더링되는 문제 발생.
   ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height) // drawImage(image, dx, dy) => 이미지는 필수, 2,3번 매개변수는 좌표값
@@ -73,3 +77,14 @@ const main = () => {
 loadImge()
 setupkeyboardListner()
 main()
+
+// 총알은 스페이스바가 눌리면 발사된다. => 총알은 y축이 계속해서 - 된다.
+// 스페이스바를 여러번 누르면 여러개의 총알이 발사된다. => 총알을 누르는 횟수만큼 요소가 만들어질 배열을 만들자.
+const createBullet = () => {
+  // 스페이스가 눌렸을 때에 대한
+  console.log('in')
+}
+// 각 총알은 좌표값(x,y)을 갖고 있어야 한다. => class화(constructor)
+// 총알을 누르는 배열 []을 render한다.
+
+// keyup 이벤트에 스페이스를 눌렀을 때에 대한 정의를 해준다.
