@@ -136,7 +136,8 @@ function Bullet() {
           this.x <= enemyList[i].x + 24
         ) {
           score++
-          this.alive = false // 죽은 총알
+          // this.alive = false // 죽은 총알
+          // ★ 그대로 했을때에 문제점 : 총알이 배열에 남아서 렌더링은 안되지만 값은 유지되면서 뒤쪽에 있는 적들까지 없애 버림.
           enemyList.splice(i, 1)
           const indexNum = bulletList.findIndex((e) => e === this)
           bulletList.splice(indexNum, 1)
