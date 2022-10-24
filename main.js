@@ -18,6 +18,10 @@ let spaceshipY = canvas.height - 24
 // 총알이 만들어지면 배열 []을 render한다.
 let bulletList = []
 let backgroundImg, spaceshipImg, bulletImg, enemyImg
+// 적을 만들 배열 []
+const enemyList = []
+let gameOver = false //true면 게임이 끝남, false면 게임이 안끝남.
+let score = 0 // 점수(적을 맞췄을때)
 
 function loadImge() {
   backgroundImg = new Image()
@@ -28,6 +32,8 @@ function loadImge() {
   bulletImg.src = 'img/bullet.png'
   enemyImg = new Image()
   enemyImg.src = 'img/enemy.png'
+  gameoverImg = new Image()
+  gameoverImg.src = 'img/gameover.png'
 }
 
 // 방향키를 누르면 우주선이 움직인다.
@@ -47,18 +53,26 @@ const setupkeyboardListner = () => {
     }
   })
 }
+
 const update = () => {
   // 오른쪽 키가 눌린 순간(39가 keysdown에 들어가면)
   if (39 in keysdown) {
-    if (spaceshipX < canvas.width - 24) {
+    if (spaceshipX <= canvas.width - 24) {
       spaceshipX += 5
     }
   }
   // 왼쪽 키가 눌린 순간(37이 keysdown에 들어가면)
   if (37 in keysdown) {
-    if (spaceshipX > 0) {
+    if (spaceshipX >= 0) {
       spaceshipX -= 5
     }
+  }
+  for (let i = 0; i < bulletList.length; i++) {
+    bulletList[i].update()
+    bulletList[i].checkHit()
+  }
+  for (let i = 0; i < enemyList.length; i++) {
+    enemyList[i].update()
   }
 }
 
@@ -66,41 +80,99 @@ const render = () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height) // canvas에 렌더링 된 것들을 초기화하는 작업 / 하지 않았을 때 기존 그림들이 같이 렌더링되는 문제 발생.
   ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height) // drawImage(image, dx, dy) => 이미지는 필수, 2,3번 매개변수는 좌표값
   ctx.drawImage(spaceshipImg, spaceshipX, spaceshipY) // 캔버스에 우주선 값을 그려준다.
-  // 총알이 만들어진만큼 총알을 render 한다.
+  // 배열화한 총알들 그리기
   for (let i = 0; i < bulletList.length; i++) {
+    // if (bulletList[i].alive) {
     ctx.drawImage(bulletImg, bulletList[i].x, bulletList[i].y)
+    // }
+  }
+  // 배열화한 적들 그리기(1초마다 생성된 것들)
+  for (let i = 0; i < enemyList.length; i++) {
+    ctx.drawImage(enemyImg, enemyList[i].x, enemyList[i].y)
   }
 }
 
 const main = () => {
+  if (gameOver) {
+    ctx.drawImage(gameoverImg, 10, 150)
+    return
+  }
   update() // 좌표값을 업데이트하고 그려줘야 하니까 render 전에 호출
   render()
   requestAnimationFrame(main) // 프레임을 계속해서 불러준다.
 }
 
-loadImge()
-setupkeyboardListner()
-main()
-
-// 총알은 스페이스바가 눌리면 발사된다. => 총알은 y축이 계속해서 - 된다.
-// 스페이스바를 여러번 누르면 여러개의 총알이 발사된다. => 총알을 누르는 횟수만큼 요소가 만들어질 배열을 만들자.
 const createBullet = () => {
   // 스페이스가 눌렸을 때에 대한
-  let bullet = new Bullet() // new가 뭐냐고 함수를 새로 만든다.
+  const bullet = new Bullet() // new가 뭐냐고 함수를 새로 만든다.
   bullet.init()
 }
-
+const createEnemy = () => {
+  const interval = setInterval(function () {
+    let enemy = new Enemy()
+    enemy.init()
+  }, 1000)
+}
 // 각 총알은 좌표값(x,y)을 갖고 있어야 한다. => class화(constructor)
 function Bullet() {
   this.x = 0
   this.y = 0
 
   this.init = function () {
-    this.x = spaceshipX
-    this.y = spaceshipY
-    console.log(this.x, this.y)
+    this.x = spaceshipX + 2
+    this.y = spaceshipY - 24
+    // this.alive = true //  총알의 생존여부
     bulletList.push(this)
+  }
+  this.update = function () {
+    this.y -= 5
+  }
+  this.checkHit = function () {
+    for (let i = 0; i <= enemyList.length; i++) {
+      if (enemyList[i]) {
+        if (
+          this.y <= enemyList[i].y &&
+          this.x >= enemyList[i].x &&
+          this.x <= enemyList[i].x + 24
+        ) {
+          score++
+          this.alive = false // 죽은 총알
+          enemyList.splice(i, 1)
+          const indexNum = bulletList.findIndex((e) => e === this)
+          bulletList.splice(indexNum, 1)
+        }
+      }
+    }
   }
 }
 
-// keyup 이벤트에 스페이스를 눌렀을 때에 대한 정의를 해준다.
+function randomvalue(min, max) {
+  const randomnumber = Math.floor(Math.random() * (max - min + 1)) + min
+  return randomnumber
+}
+// 만들어질때 각각 x와 y값을 매개변수로 받아서 입력해주자.
+function Enemy() {
+  this.x = 0
+  this.y = 0
+
+  this.init = function () {
+    this.x = randomvalue(0, canvas.width - 24)
+    this.y = 0
+    enemyList.push(this)
+  }
+  this.update = function () {
+    this.y += 1
+
+    if (this.y >= canvas.height - 24) {
+      gameOver = true
+    }
+  }
+}
+
+// 총알을 맞으면 사라진다. => 점수 1점 획득
+// 적군이 바닥에 닿으면 game 오버
+
+loadImge()
+setupkeyboardListner()
+createEnemy()
+main()
