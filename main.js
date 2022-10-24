@@ -31,20 +31,45 @@ function loadImge() {
 
 // 방향키를 누르면 우주선이 움직인다.
 // 움직인다 -> x,y값을 변경한다.(spaceshipX, spaceshipY)
-
+let keysdown = {}
 const setupkeyboardListner = () => {
-  document.addEventListener('click')
+  // 키가 누르는 순간 해당 키 값을 트루로 만들어주자.
+  document.addEventListener('keydown', function (e) {
+    // 방향키의 키를 따보자 : 오른쪽 39, 왼쪽 37, 위로 38, 아래 40
+    // console.log(e.keyCode) // 무슨키가 눌렸는지 확인하려면 : event.keyCode
+    keysdown[e.keyCode] = true
+  })
+  // 키를 떼는 순간 해당 키 값을 삭제한다.
+  document.addEventListener('keyup', function (e) {
+    delete keysdown[e.keyCode]
+  })
 }
-
+const update = () => {
+  // 오른쪽 키가 눌린 순간(39가 keysdown에 들어가면)
+  if (39 in keysdown) {
+    if (spaceshipX < canvas.width - 24) {
+      spaceshipX += 5
+    }
+  }
+  // 왼쪽 키가 눌린 순간(37이 keysdown에 들어가면)
+  if (37 in keysdown) {
+    if (spaceshipX > 0) {
+      spaceshipX -= 5
+    }
+  }
+}
 const render = () => {
+  ctx.clearRect(0, 0, canvas.width, canvas.height) // canvas에 렌더링 된 것들을 초기화하는 작업 / 하지 않았을 때 기존 그림들이 같이 렌더링되는 문제 발생.
   ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height) // drawImage(image, dx, dy) => 이미지는 필수, 2,3번 매개변수는 좌표값
   ctx.drawImage(spaceshipImg, spaceshipX, spaceshipY) // 캔버스에 우주선 값을 그려준다.
 }
 
 const main = () => {
+  update() // 좌표값을 업데이트하고 그려줘야 하니까 render 전에 호출
   render()
   requestAnimationFrame(main) // 프레임을 계속해서 불러준다.
 }
 
 loadImge()
+setupkeyboardListner()
 main()
