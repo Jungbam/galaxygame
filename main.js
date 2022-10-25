@@ -77,14 +77,16 @@ const update = () => {
 }
 
 const render = () => {
+  //★그대로 했을 때 문제점 : 캔버스에 렌더링 된 그림들이 초기화되지 않아 이동하는 그림들이 그림자 분신술을 함.
   ctx.clearRect(0, 0, canvas.width, canvas.height) // canvas에 렌더링 된 것들을 초기화하는 작업 / 하지 않았을 때 기존 그림들이 같이 렌더링되는 문제 발생.
   ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height) // drawImage(image, dx, dy) => 이미지는 필수, 2,3번 매개변수는 좌표값
   ctx.drawImage(spaceshipImg, spaceshipX, spaceshipY) // 캔버스에 우주선 값을 그려준다.
+  ctx.fillText(`점수 : ${score}`, 20, 20)
   // 배열화한 총알들 그리기
   for (let i = 0; i < bulletList.length; i++) {
     // if (bulletList[i].alive) {
     ctx.drawImage(bulletImg, bulletList[i].x, bulletList[i].y)
-    // }
+    //    }
   }
   // 배열화한 적들 그리기(1초마다 생성된 것들)
   for (let i = 0; i < enemyList.length; i++) {
